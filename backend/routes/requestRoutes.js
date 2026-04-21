@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
+const { createRequest, getTenantRequests, getLandlordRequests, updateRequestStatus } = require("../controllers/requestController");
 
-// Routes coming soon
-router.get("/", (req, res) => {
-  res.json({ message: "Route working!" });
-});
+router.post("/", createRequest);
+router.get("/tenant/:walletAddress", getTenantRequests);
+router.get("/landlord/:walletAddress", getLandlordRequests);
+router.put("/:id", updateRequestStatus);
 
 module.exports = router;

@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
+const { registerUser, getUser, updateNickname } = require("../controllers/userController");
 
-// Routes coming soon
-router.get("/", (req, res) => {
-  res.json({ message: "Route working!" });
-});
+router.post("/register", registerUser);
+router.get("/:walletAddress", getUser);
+router.put("/:walletAddress", updateNickname);
 
 module.exports = router;

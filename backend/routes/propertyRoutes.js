@@ -1,9 +1,19 @@
 const express = require("express");
 const router = express.Router();
+const {
+  addProperty,
+  getAllProperties,
+  getLandlordProperties,
+  getPropertyById,
+  updateProperty,
+  deleteProperty
+} = require("../controllers/propertyController");
 
-// Routes coming soon
-router.get("/", (req, res) => {
-  res.json({ message: "Route working!" });
-});
+router.post("/", addProperty);
+router.get("/", getAllProperties);
+router.get("/landlord/:walletAddress", getLandlordProperties); 
+router.get("/:id", getPropertyById);                          
+router.put("/:id", updateProperty);
+router.delete("/:id", deleteProperty);
 
 module.exports = router;
