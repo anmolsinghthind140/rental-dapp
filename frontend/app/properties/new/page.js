@@ -9,6 +9,7 @@ import {
   TrashIcon,
   HomeIcon
 } from "@heroicons/react/24/outline";
+import toast from "react-hot-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -57,11 +58,11 @@ export default function AddPropertyPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.city || !form.address) {
-      alert("Please fill required fields");
+      toast.error("Please fill required fields");
       return;
     }
     if (rooms.some(r => !r.rentPerPerson)) {
-      alert("Please fill rent for all rooms");
+      toast.error("Please fill rent for all rooms");
       return;
     }
 
@@ -75,7 +76,7 @@ export default function AddPropertyPage() {
       router.push("/properties");
     } catch (error) {
       console.error(error);
-      alert("Error adding property");
+      toast.error("Error adding property");
     } finally {
       setLoading(false);
     }

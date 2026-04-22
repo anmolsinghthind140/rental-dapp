@@ -16,6 +16,7 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from "@heroicons/react/24/outline";
+import toast from "react-hot-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -75,7 +76,7 @@ export default function PropertyDetailPage() {
 
   const submitRequest = async (e) => {
     e.preventDefault();
-    if (!requestForm.moveInDate) return alert("Please select move-in date");
+    if (!requestForm.moveInDate) return toast.error("Please select move-in date");
     setRequesting(true);
     try {
       await axios.post(`${API_URL}/api/requests`, {
@@ -88,11 +89,11 @@ export default function PropertyDetailPage() {
         message: requestForm.message
       });
       setShowRequestModal(false);
-      alert("Request sent successfully!");
+      toast.success("Request sent successfully!");
       router.push("/requests");
     } catch (error) {
       console.error(error);
-      alert("Error sending request");
+      toast.error("Error sending request");
     } finally {
       setRequesting(false);
     }

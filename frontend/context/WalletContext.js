@@ -2,6 +2,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { ethers } from "ethers";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const API_URL = "http://localhost:5000";
 const WalletContext = createContext();
@@ -38,7 +39,7 @@ export const WalletProvider = ({ children }) => {
   const connectWallet = async () => {
     try {
       if (typeof window.ethereum === "undefined") {
-        alert("Please install MetaMask!");
+        toast.error("Please install MetaMask!");
         return null;
       }
 

@@ -12,6 +12,7 @@ import {
   CalendarIcon,
   UserIcon
 } from "@heroicons/react/24/outline";
+import toast from "react-hot-toast";
 
 const API_URL = "http://localhost:5000";
 
@@ -69,12 +70,12 @@ export default function RequestsPage() {
       await axios.put(`${API_URL}/api/requests/${requestId}`, { status });
       fetchRequests();
       if (status === "approved") {
-        alert("Request approved! Agreement draft created.");
+        toast.success("Request approved! Agreement draft created.");
         router.push("/agreements");
       }
     } catch (error) {
       console.error(error);
-      alert("Error updating request");
+      toast.error("Error updating request");
     }
   };
 

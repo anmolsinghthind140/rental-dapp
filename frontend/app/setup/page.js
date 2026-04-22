@@ -7,6 +7,7 @@ import {
   UserIcon,
   WalletIcon
 } from "@heroicons/react/24/outline";
+import toast from "react-hot-toast";
 
 export default function SetupPage() {
   const { wallet, registerUser } = useWallet();
@@ -17,7 +18,7 @@ export default function SetupPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!nickname || !role) return alert("Please fill all fields");
+    if (!nickname || !role) return toast.error("Please fill all fields");
     setLoading(true);
     const user = await registerUser(nickname, role);
     setLoading(false);

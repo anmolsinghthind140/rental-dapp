@@ -14,6 +14,7 @@ import {
   HomeIcon,
   ClockIcon
 } from "@heroicons/react/24/outline";
+import toast from "react-hot-toast";
 
 const API_URL = "http://localhost:5000";
 
@@ -66,18 +67,18 @@ export default function ProfilePage() {
   };
 
   const handleSave = async () => {
-    if (!nickname.trim()) return alert("Nickname cannot be empty");
+    if (!nickname.trim()) return toast.success("Nickname cannot be empty");
     setSaving(true);
     try {
       const res = await axios.put(
         `${API_URL}/api/users/${wallet.address}`,
         { nickname }
       );
-      alert("Nickname updated!");
+      toast.success("Nickname updated!");
       setEditing(false);
     } catch (error) {
       console.error(error);
-      alert("Error updating nickname");
+      toast.error("Error updating nickname");
     } finally {
       setSaving(false);
     }
