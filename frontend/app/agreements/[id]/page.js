@@ -75,7 +75,7 @@ export default function AgreementDetailPage() {
       const res = await axios.get(`${API_URL}/api/payments/agreement/${id}`);
       setPayments(res.data.payments || []);
     } catch (error) {
-      console.error("fetchPayments error:", error.message);
+      console.error(error);
     }
   };
 
@@ -150,12 +150,14 @@ export default function AgreementDetailPage() {
       });
 
       await axios.post(`${API_URL}/api/payments`, {
-        agreementId:     id,
-        tenantAddress:   wallet.address,
+        agreementId: id,
+        propertyId: agreement.propertyId?._id,
+        roomId: agreement.roomId,
+        tenantAddress: wallet.address,
         landlordAddress: agreement.landlordAddress,
-        amount:          agreement.depositAmount,
-        txHash:          tx.hash,
-        type:            "deposit",
+        amount: agreement.depositAmount,
+        txHash: tx.hash,
+        type: "deposit",
       });
 
       toast.success("Agreement signed! Deposit paid on Sepolia!", { id: toastId });
@@ -173,15 +175,15 @@ export default function AgreementDetailPage() {
   const handlePayRent = async () => {
     const now = new Date();
     const rentMonth = now.getMonth() + 1;
-    const rentYear  = now.getFullYear();
+    const rentYear = now.getFullYear();
     const monthName = now.toLocaleString("default", { month: "long" });
 
     // Frontend duplicate check
     const alreadyPaid = payments.some(
       p => p.type === "rent" &&
-           p.rentMonth === rentMonth &&
-           p.rentYear  === rentYear  &&
-           p.status    === "paid"
+        p.rentMonth === rentMonth &&
+        p.rentYear === rentYear &&
+        p.status === "paid"
     );
     if (alreadyPaid) {
       toast.error(`Rent for ${monthName} ${rentYear} already paid!`);
@@ -192,18 +194,20 @@ export default function AgreementDetailPage() {
     setActionLoading(true);
     try {
       const contract = getContract(agreement.contractAddress, wallet.signer);
-      const rentWei  = ethers.parseEther(agreement.rentAmount.toString());
+      const rentWei = ethers.parseEther(agreement.rentAmount.toString());
 
       const tx = await contract.payRent({ value: rentWei });
       await tx.wait();
 
       await axios.post(`${API_URL}/api/payments`, {
-        agreementId:     id,
-        tenantAddress:   wallet.address,
+        agreementId: id,
+        propertyId: agreement.propertyId?._id,
+        roomId: agreement.roomId,
+        tenantAddress: wallet.address,
         landlordAddress: agreement.landlordAddress,
-        amount:          agreement.rentAmount,
-        txHash:          tx.hash,
-        type:            "rent",
+        amount: agreement.rentAmount,
+        txHash: tx.hash,
+        type: "rent",
         rentMonth,
         rentYear
       });
@@ -271,10 +275,10 @@ export default function AgreementDetailPage() {
   }
 
   const statusColors = {
-    draft:      "text-gray-400 bg-gray-500/20",
-    sent:       "text-yellow-400 bg-yellow-500/20",
-    active:     "text-green-400 bg-green-500/20",
-    rejected:   "text-red-400 bg-red-500/20",
+    draft: "text-gray-400 bg-gray-500/20",
+    sent: "text-yellow-400 bg-yellow-500/20",
+    active: "text-green-400 bg-green-500/20",
+    rejected: "text-red-400 bg-red-500/20",
     terminated: "text-red-600 bg-red-800/20",
   };
 
@@ -496,39 +500,50 @@ export default function AgreementDetailPage() {
             <div className="space-y-3">
               {payments.map((p) => (
                 <div key={p._id}
-                  className="bg-gray-800 p-4 rounded-xl flex justify-between items-center border border-gray-700">
-                  <div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-bold capitalize ${
-                      p.type === "deposit"
-                        ? "bg-yellow-500/20 text-yellow-400"
-                        : "bg-blue-500/20 text-blue-400"
-                    }`}>
-                      {p.type}
-                    </span>
-                    {p.type === "rent" && p.rentMonth && p.rentYear && (
-                      <p className="text-white font-bold mt-1">
-                        {new Date(p.rentYear, p.rentMonth - 1)
-                          .toLocaleString("default", { month: "long", year: "numeric" })}
+                  className="bg-gray-800 p-4 rounded-xl border border-gray-700">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-bold capitalize ${p.type === "deposit"
+                          ? "bg-yellow-500/20 text-yellow-400"
+                          : "bg-blue-500/20 text-blue-400"
+                        }`}>
+                        {p.type}
+                      </span>
+
+                      {/* ✅ Show property */}
+                      {p.propertyId && (
+                        <p className="text-gray-300 text-sm mt-2">
+                          🏠 {p.propertyId.address}, {p.propertyId.city}
+                        </p>
+                      )}
+
+                      {/* Show month for rent */}
+                      {p.type === "rent" && p.rentMonth && p.rentYear && (
+                        <p className="text-white font-bold mt-1">
+                          {new Date(p.rentYear, p.rentMonth - 1)
+                            .toLocaleString("default", { month: "long", year: "numeric" })}
+                        </p>
+                      )}
+                      {p.type === "deposit" && (
+                        <p className="text-white font-bold mt-1">Security Deposit</p>
+                      )}
+                      <p className="text-gray-400 text-xs mt-1">
+                        {new Date(p.paymentDate).toLocaleDateString("en-GB", {
+                          day: "2-digit", month: "short", year: "numeric"
+                        })}
                       </p>
-                    )}
-                    {p.type === "deposit" && (
-                      <p className="text-white font-bold mt-1">Security Deposit</p>
-                    )}
-                    <p className="text-gray-400 text-xs mt-1">
-                      {new Date(p.paymentDate).toLocaleDateString("en-GB", {
-                        day: "2-digit", month: "short", year: "numeric"
-                      })}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-green-400 font-bold text-lg">{p.amount} ETH</p>
-                    {p.txHash && (
-                      <a href={`https://sepolia.etherscan.io/tx/${p.txHash}`}
-                        target="_blank" rel="noopener noreferrer"
-                        className="text-xs text-blue-400 hover:underline">
-                        View on Etherscan ↗
-                      </a>
-                    )}
+                    </div>
+
+                    <div className="text-right">
+                      <p className="text-green-400 font-bold text-lg">{p.amount} ETH</p>
+                      {p.txHash && (
+                        <a href={`https://sepolia.etherscan.io/tx/${p.txHash}`}
+                          target="_blank" rel="noopener noreferrer"
+                          className="text-xs text-blue-400 hover:underline">
+                          View on Etherscan ↗
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

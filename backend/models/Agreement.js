@@ -7,6 +7,8 @@ const agreementSchema = new mongoose.Schema({
   roomId: { type: String },
   contractAddress: { type: String, default: null },
   rentAmount: { type: Number, required: true },
+  propertyId: { type: mongoose.Schema.Types.ObjectId, ref: "Property" },
+  roomId: { type: mongoose.Schema.Types.ObjectId },
   depositAmount: { type: Number, required: true },
   startDate: { type: Date },
   endDate: { type: Date },

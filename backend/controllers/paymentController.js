@@ -3,25 +3,33 @@ const Payment = require("../models/Payment");
 const createPayment = async (req, res, next) => {
   try {
     const {
-      agreementId, tenantAddress, landlordAddress,
+      agreementId, propertyId, roomId,   
+      tenantAddress, landlordAddress,
       amount, txHash, type, rentMonth, rentYear
     } = req.body;
 
-    // Block duplicate rent for same month
+    // Block duplicate rent for same room same month
     if (type === "rent") {
       const existing = await Payment.findOne({
-        agreementId, type: "rent", rentMonth, rentYear, status: "paid"
+        agreementId,
+        roomId,        
+        type: "rent",
+        rentMonth,
+        rentYear,
+        status: "paid"
       });
       if (existing) {
         return res.status(400).json({
           success: false,
-          message: `Rent for this month already paid`
+          message: `Rent for this room already paid this month`
         });
       }
     }
 
     const payment = await Payment.create({
       agreementId,
+      propertyId,    
+      roomId,        
       tenantAddress: tenantAddress.toLowerCase(),
       landlordAddress: landlordAddress.toLowerCase(),
       amount,
@@ -41,7 +49,10 @@ const getAgreementPayments = async (req, res, next) => {
   try {
     const payments = await Payment.find({
       agreementId: req.params.agreementId
-    }).sort({ paymentDate: -1 });
+    })
+    .populate("propertyId", "address city area")  
+    .sort({ paymentDate: -1 });
+
     res.status(200).json({ success: true, payments });
   } catch (error) {
     next(error);
