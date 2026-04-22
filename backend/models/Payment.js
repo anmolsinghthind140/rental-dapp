@@ -16,6 +16,9 @@ const paymentSchema = new mongoose.Schema({
     enum: ["paid", "pending", "failed"],
     default: "paid"
   },
+  // ✅ Add these 2 fields
+  rentMonth: { type: Number, min: 1, max: 12, default: null }, 
+  rentYear:  { type: Number, default: null },                  
   paymentDate: { type: Date, default: Date.now }
 });
 
